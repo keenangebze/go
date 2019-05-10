@@ -12,7 +12,7 @@ import (
 	"sync"
 )
 
-// processCSVFileByRow is a wrapper of processCSVByRow that reads CSV file and output the processed CSV as a file.
+// ProcessCSVFileByRow is a wrapper of processCSVByRow that reads CSV file and output the processed CSV as a file.
 func ProcessCSVFileByRow(inputCSV string, outputCSV string, rowProcessor func([]string) []string) {
 	// Open the input and output file
 	inFile, err := os.Open(inputCSV)
@@ -26,10 +26,10 @@ func ProcessCSVFileByRow(inputCSV string, outputCSV string, rowProcessor func([]
 		log.Fatalf("Cannot open file %v. Aborting.\n", outputCSV)
 	}
 	defer outFile.Close()
-	processCSVByRow(inFile, outFile, rowProcessor)
+	ProcessCSVByRow(inFile, outFile, rowProcessor)
 }
 
-// processCSVFileByRowParallel is like processCSVFileByRow but in parallel.
+// ProcessCSVFileByRowParallel is like processCSVFileByRow but in parallel.
 // This will not maintain CSV row ordering.
 func ProcessCSVFileByRowParallel(inputCSV string, outputCSV string, rowProcessor func([]string) []string, numberOfGoroutines uint8) {
 	// Open the input and output file
@@ -44,10 +44,10 @@ func ProcessCSVFileByRowParallel(inputCSV string, outputCSV string, rowProcessor
 		log.Fatalf("Cannot open file %v. Aborting.\n", outputCSV)
 	}
 	defer outFile.Close()
-	processCSVByRowParallel(inFile, outFile, rowProcessor, numberOfGoroutines)
+	ProcessCSVByRowParallel(inFile, outFile, rowProcessor, numberOfGoroutines)
 }
 
-// processCSVByRow reads csv row line by line, then do rowProcessor() on each row and output a new row.
+// ProcessCSVByRow reads csv row line by line, then do rowProcessor() on each row and output a new row.
 func ProcessCSVByRow(in io.Reader, out io.Writer, rowProcessor func([]string) []string) {
 	// Read the input and output file as CSV
 	inCSVReader := csv.NewReader(in)
@@ -74,7 +74,7 @@ func ProcessCSVByRow(in io.Reader, out io.Writer, rowProcessor func([]string) []
 	}
 }
 
-// processCSVByRowParallel process the CSV row by row in parallel.
+// ProcessCSVByRowParallel process the CSV row by row in parallel.
 // This is much faster than its processCSVByRow but doesn't maintain row ordering.
 func ProcessCSVByRowParallel(in io.Reader, out io.Writer, rowProcessor func([]string) []string, poolSize uint8) {
 	// Read the input and output file as CSV
