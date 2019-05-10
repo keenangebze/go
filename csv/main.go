@@ -13,7 +13,7 @@ import (
 )
 
 // processCSVFileByRow is a wrapper of processCSVByRow that reads CSV file and output the processed CSV as a file.
-func processCSVFileByRow(inputCSV string, outputCSV string, rowProcessor func([]string) []string) {
+func ProcessCSVFileByRow(inputCSV string, outputCSV string, rowProcessor func([]string) []string) {
 	// Open the input and output file
 	inFile, err := os.Open(inputCSV)
 	if err != nil {
@@ -31,7 +31,7 @@ func processCSVFileByRow(inputCSV string, outputCSV string, rowProcessor func([]
 
 // processCSVFileByRowParallel is like processCSVFileByRow but in parallel.
 // This will not maintain CSV row ordering.
-func processCSVFileByRowParallel(inputCSV string, outputCSV string, rowProcessor func([]string) []string, numberOfGoroutines uint8) {
+func ProcessCSVFileByRowParallel(inputCSV string, outputCSV string, rowProcessor func([]string) []string, numberOfGoroutines uint8) {
 	// Open the input and output file
 	inFile, err := os.Open(inputCSV)
 	if err != nil {
@@ -48,7 +48,7 @@ func processCSVFileByRowParallel(inputCSV string, outputCSV string, rowProcessor
 }
 
 // processCSVByRow reads csv row line by line, then do rowProcessor() on each row and output a new row.
-func processCSVByRow(in io.Reader, out io.Writer, rowProcessor func([]string) []string) {
+func ProcessCSVByRow(in io.Reader, out io.Writer, rowProcessor func([]string) []string) {
 	// Read the input and output file as CSV
 	inCSVReader := csv.NewReader(in)
 	outCSVReader := csv.NewWriter(out)
@@ -76,7 +76,7 @@ func processCSVByRow(in io.Reader, out io.Writer, rowProcessor func([]string) []
 
 // processCSVByRowParallel process the CSV row by row in parallel.
 // This is much faster than its processCSVByRow but doesn't maintain row ordering.
-func processCSVByRowParallel(in io.Reader, out io.Writer, rowProcessor func([]string) []string, poolSize uint8) {
+func ProcessCSVByRowParallel(in io.Reader, out io.Writer, rowProcessor func([]string) []string, poolSize uint8) {
 	// Read the input and output file as CSV
 	inCSVReader := csv.NewReader(in)
 	outCSVWriter := csv.NewWriter(out)
