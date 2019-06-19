@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mandelag/go/csv"
+	"github.com/keenangebze/go/csv"
 )
 
 // TestProcessCSVByRowParallel asserts the number of lines in the input and output are the same.

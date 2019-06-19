@@ -93,7 +93,9 @@ func ProcessCSVByRowParallel(in io.Reader, out io.Writer, rowProcessor func([]st
 	// Writer
 	go func() {
 		for processed := range workerPool.Consume() {
-			outCSVWriter.Write(processed)
+			if processed != nil {
+				outCSVWriter.Write(processed)
+			}
 		}
 		outCSVWriter.Flush()
 		wg.Done()
