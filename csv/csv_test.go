@@ -71,13 +71,10 @@ func ExampleProcessCSVByRowParallel() {
 		return append(row, strconv.Itoa(a+b+c))
 	}
 
-	// Number of goroutines in the worker pool to process the row.
-	goroutines := uint8(8)
-
 	// Skip the CSV header because you cannot add header string.
 	skipHeader := true
 
-	csv.ProcessCSVByRowParallel(csvStream, os.Stdout, columnAddition, goroutines, skipHeader)
+	csv.ProcessCSVByRowParallel(csvStream, os.Stdout, columnAddition, skipHeader)
 
 	// Unordered output:
 	//100,32,-3,129

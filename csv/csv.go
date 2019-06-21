@@ -31,7 +31,7 @@ func ProcessCSVFileByRow(inputCSV string, outputCSV string, rowProcessor func([]
 // ProcessCSVFileByRowParallel is like processCSVFileByRow but in parallel.
 // This will not maintain CSV row ordering.
 // Please handle panic in the function accordingly.
-func ProcessCSVFileByRowParallel(inputCSV string, outputCSV string, rowProcessor func([]string) []string, numberOfGoroutines uint8, skipHeader bool) {
+func ProcessCSVFileByRowParallel(inputCSV string, outputCSV string, rowProcessor func([]string) []string, skipHeader bool) {
 	// Open the input and output file
 	inFile, err := os.Open(inputCSV)
 	if err != nil {
@@ -44,7 +44,7 @@ func ProcessCSVFileByRowParallel(inputCSV string, outputCSV string, rowProcessor
 		log.Fatalf("Cannot open file %v. Aborting.\n", outputCSV)
 	}
 	defer outFile.Close()
-	ProcessCSVByRowParallel(inFile, outFile, rowProcessor, numberOfGoroutines, skipHeader)
+	ProcessCSVByRowParallel(inFile, outFile, rowProcessor, skipHeader)
 }
 
 // ProcessCSVByRow reads csv row line by line, then do rowProcessor() on each row and output a new row.
@@ -80,12 +80,12 @@ func ProcessCSVByRow(in io.Reader, out io.Writer, rowProcessor func([]string) []
 
 // ProcessCSVByRowParallel process the CSV row by row in parallel.
 // This is much faster than its processCSVByRow but doesn't maintain row ordering.
-func ProcessCSVByRowParallel(in io.Reader, out io.Writer, rowProcessor func([]string) []string, poolSize uint8, skipHeader bool) {
+func ProcessCSVByRowParallel(in io.Reader, out io.Writer, rowProcessor func([]string) []string, skipHeader bool) {
 	// Read the input and output file as CSV
 	inCSVReader := csv.NewReader(in)
 	outCSVWriter := csv.NewWriter(out)
 
-	workerPool := NewRowWorkerPool(rowProcessor, poolSize)
+	workerPool := NewRowWorkerPool(rowProcessor)
 
 	// Create the writer goroutine
 	var wg sync.WaitGroup

@@ -2,8 +2,12 @@ package csv
 
 import (
 	"errors"
+	"runtime"
 	"sync"
 )
+
+// Set the number of goroutines in the pool
+var NumberOfGoroutines = runtime.NumCPU() * 32
 
 // RowWorkerPool will manages a pool of Goroutines to process the CSV row in parallel.
 // It is heavily inspired by Jason Waldrip's code from in the book "Go in Action" (2015)
@@ -21,14 +25,14 @@ type RowWorkerPool struct {
 var ErrWorkerClosed = errors.New("worker pool already closed")
 
 // NewRowWorkerPool instantiate the worker pool.
-func NewRowWorkerPool(rowProcessor func(row []string) []string, poolSize uint8) *RowWorkerPool {
+func NewRowWorkerPool(rowProcessor func(row []string) []string) *RowWorkerPool {
 	pool := RowWorkerPool{
 		process:   rowProcessor,
 		inStream:  make(chan []string),
 		outStream: make(chan []string),
 	}
-	pool.wg.Add(int(poolSize))
-	for i := 0; i < int(poolSize); i++ {
+	pool.wg.Add(int(NumberOfGoroutines))
+	for i := 0; i < int(NumberOfGoroutines); i++ {
 		go func() {
 			for task := range pool.inStream {
 				pool.outStream <- pool.process(task)
