@@ -2,11 +2,10 @@ package jsonl2csv_test
 
 import (
 	"encoding/json"
+	"github.com/keenangebze/go/util/jsonl2csv"
 	"log"
 	"os"
 	"strings"
-	
-	"github.com/keenangebze/go/util/jsonl2csv"
 )
 
 // Simple use case
