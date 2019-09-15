@@ -3,17 +3,22 @@ package jsonl2csv
 import (
 	"bufio"
 	"encoding/csv"
+	"errors"
 	"io"
-	"log"
 	"sync"
 )
 
-// Worker is the number of goroutine used to process the stream
-var Worker = 10
+// NumOfWorker is the number of goroutine used to process the stream
+var NumOfWorker = 10
+
+// ErrInvalidNumOfWorker thrown if NumOfWorker < 1
+var ErrInvalidNumOfWorker = errors.New("Invalid number of workers. Must be greater than 0.")
 
 // Jsonl2Csv Converts JSONL stream in to CSV stream
-func Jsonl2Csv(in io.Reader, out io.Writer, transform func(in []byte) ([]string, error)) {
-
+func Jsonl2Csv(in io.Reader, out io.Writer, transform func(in []byte) ([]string, error)) error {
+	if NumOfWorker <= 1 {
+		return ErrInvalidNumOfWorker
+	}
 	jsonStream := make(chan []byte)
 	csvStream := make(chan []string)
 	wg1 := sync.WaitGroup{}
@@ -31,13 +36,12 @@ func Jsonl2Csv(in io.Reader, out io.Writer, transform func(in []byte) ([]string,
 	}()
 
 	// jsonl2csv converter
-	for i := 0; i < Worker; i++ {
+	for i := 0; i < NumOfWorker; i++ {
 		wg2.Add(1)
 		go func() {
 			for m := range jsonStream {
 				csvData, err := transform(m)
 				if err != nil {
-					log.Println(err)
 					continue
 				}
 				csvStream <- csvData
@@ -62,4 +66,6 @@ func Jsonl2Csv(in io.Reader, out io.Writer, transform func(in []byte) ([]string,
 	wg2.Wait()
 	close(csvStream)
 	wg3.Wait()
+
+	return nil
 }
