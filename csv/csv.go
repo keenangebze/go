@@ -76,6 +76,7 @@ func ProcessCSVByRow(in io.Reader, out io.Writer, rowProcessor func([]string) []
 			continue
 		}
 	}
+	outCSVReader.Flush()
 }
 
 // ProcessCSVByRowParallel process the CSV row by row in parallel.
