@@ -70,6 +70,9 @@ func ProcessCSVByRow(in io.Reader, out io.Writer, rowProcessor func([]string) []
 		}
 
 		result := rowProcessor(row)
+		if result == nil {
+			continue
+		}
 		err = outCSVReader.Write(result)
 		if err != nil {
 			log.Printf("Cannot write row at line %v.\n", lineCount)

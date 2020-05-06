@@ -27,7 +27,6 @@ a,b,c
 	expectedCount := 0
 
 	// Simple use case to add the value of column a, b, and c into new column.
-	goroutines := uint8(8)
 	csv.ProcessCSVByRowParallel(csvStream, csvOutStream, func(row []string) []string {
 		a, err := strconv.Atoi(row[0])
 		b, err := strconv.Atoi(row[1])
@@ -37,13 +36,13 @@ a,b,c
 		}
 		actualCount++
 		return append(row, strconv.Itoa(a+b+c))
-	}, goroutines, true)
+	}, true)
 
 	// Read to the output to assert it.
 	csv.ProcessCSVByRowParallel(csvOutStream, os.Stdout, func(row []string) []string {
 		expectedCount++
 		return nil
-	}, goroutines, false)
+	}, false)
 
 	// Compare the result.
 	if expectedCount != actualCount {

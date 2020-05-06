@@ -35,7 +35,11 @@ func NewRowWorkerPool(rowProcessor func(row []string) []string) *RowWorkerPool {
 	for i := 0; i < int(NumberOfGoroutines); i++ {
 		go func() {
 			for task := range pool.inStream {
-				pool.outStream <- pool.process(task)
+				result := pool.process(task)
+				if result == nil {
+					continue
+				}
+				pool.outStream <- result
 			}
 			pool.wg.Done()
 		}()
