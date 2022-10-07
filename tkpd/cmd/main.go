@@ -11,7 +11,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolP("help", "", false, "help for this command")
 }
 
-const VERSION = "v0.1-SNAPSHOT"
+const VERSION = "v0.1.1-SNAPSHOT"
 
 var rootCmd = &cobra.Command{
 	Use:   "tkpd",
