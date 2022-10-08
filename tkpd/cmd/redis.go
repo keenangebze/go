@@ -14,14 +14,18 @@ func init() {
 	redisDumpCmd.AddCommand(redisDumpStringCmd)
 	redisDumpCmd.PersistentFlags().StringVarP(&redisScanParam.matchPattern, "match", "m", "*", "Redis key scan pattern")
 	redisDumpCmd.PersistentFlags().StringVarP(&redisScanParam.exactKeys, "keys", "k", "", "Exact keys to dump (will ignore match flag)")
-	redisDumpCmd.PersistentFlags().Int64VarP(&redisScanParam.scanSize, "scan-size", "ss", 10000, "Exact keys to dump (will ignore match flag)")
+	redisDumpCmd.PersistentFlags().Int64VarP(&redisScanParam.scanSize, "scan-size", "", 10000, "Exact keys to dump (will ignore match flag)")
 
 	redisCmd.PersistentFlags().StringVarP(&redisParam.host, "host", "h", "127.0.0.1", "The address of a single redis instance")
 	redisCmd.PersistentFlags().IntVarP(&redisParam.port, "port", "p", 6379, "The port of a single redis instance")
 	redisCmd.PersistentFlags().StringVarP(&redisParam.password, "password", "a", "", "The authentication password for the redis")
-	redisCmd.AddCommand(redisDumpCmd)
 
-	redisCmd.AddCommand(redisPopulateCmd)
+	redisScanCmd.PersistentFlags().StringVarP(&redisScanParam.matchPattern, "match", "m", "*", "Redis key scan pattern")
+	redisScanCmd.PersistentFlags().Int64VarP(&redisScanParam.scanSize, "scan-size", "", 10000, "Exact keys to dump (will ignore match flag)")
+
+	redisCmd.AddCommand(redisDumpCmd)
+	// redisCmd.AddCommand(redisPopulateCmd)
+	redisCmd.AddCommand(redisScanCmd)
 
 	rootCmd.AddCommand(redisCmd)
 }
@@ -52,18 +56,18 @@ var redisCmd = &cobra.Command{
 }
 
 var redisDumpCmd = &cobra.Command{
-	Use:  "dump",
-	Long: "Read data from Redis and put the data to CSV",
+	Use:   "dump",
+	Short: "Read data from Redis and put the data to CSV",
 }
 
 var redisPopulateCmd = &cobra.Command{
-	Use:  "populate",
-	Long: "Read data from CSV and put the data to Redis",
+	Use:   "populate",
+	Short: "Read data from CSV and put the data to Redis (not yet implemented)",
 }
 
 var redisDumpSortedSetCmd = &cobra.Command{
 	Use:   "sorted-set",
-	Short: "Dump redis sorted set datastructure (ZRANGE)",
+	Short: "Scan and get value from redis sorted set datastructure (ZRANGE)",
 	Run: func(cmd *cobra.Command, args []string) {
 		redis.ScanSortedSet(redisParam.host+":"+strconv.Itoa(redisParam.port), redisParam.password, redisScanParam.matchPattern, redisScanParam.exactKeys, redisScanParam.scanSize, -1)
 	},
@@ -71,7 +75,7 @@ var redisDumpSortedSetCmd = &cobra.Command{
 
 var redisDumpListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "Dump redis list (LRANGE)",
+	Short: "Scan and get value from redis list (LRANGE)",
 	Run: func(cmd *cobra.Command, args []string) {
 		redis.ScanList(redisParam.host+":"+strconv.Itoa(redisParam.port), redisParam.password, redisScanParam.matchPattern, redisScanParam.exactKeys, redisScanParam.scanSize)
 	},
@@ -79,8 +83,16 @@ var redisDumpListCmd = &cobra.Command{
 
 var redisDumpStringCmd = &cobra.Command{
 	Use:   "string",
-	Short: "Dump redis simple string value (GET)",
+	Short: "Scan and get value from redis simple string value (GET)",
 	Run: func(cmd *cobra.Command, args []string) {
 		redis.ScanString(redisParam.host+":"+strconv.Itoa(redisParam.port), redisParam.password, redisScanParam.matchPattern, redisScanParam.exactKeys, redisScanParam.scanSize)
+	},
+}
+
+var redisScanCmd = &cobra.Command{
+	Use:   "scan",
+	Short: "Scan and get the keys",
+	Run: func(cmd *cobra.Command, args []string) {
+		redis.Scan(redisParam.host+":"+strconv.Itoa(redisParam.port), redisParam.password, redisScanParam.matchPattern, redisScanParam.scanSize)
 	},
 }
