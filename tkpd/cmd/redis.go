@@ -1,16 +1,23 @@
 package cmd
 
 import (
+	"strconv"
+
 	"github.com/spf13/cobra"
+
+	"github.com/keenangebze/go/internal/pkg/redis"
 )
 
 func init() {
 	redisDumpCmd.AddCommand(redisDumpSortedSetCmd)
 	redisDumpCmd.AddCommand(redisDumpListCmd)
 	redisDumpCmd.AddCommand(redisDumpStringCmd)
+	redisDumpCmd.PersistentFlags().StringVarP(&redisScanParam.matchPattern, "match", "m", "*", "Redis key scan pattern")
+	redisDumpCmd.PersistentFlags().StringVarP(&redisScanParam.exactKeys, "keys", "k", "", "Exact keys to dump (will ignore match flag)")
+	redisDumpCmd.PersistentFlags().Int64VarP(&redisScanParam.scanSize, "scan-size", "ss", 10000, "Exact keys to dump (will ignore match flag)")
 
 	redisCmd.PersistentFlags().StringVarP(&redisParam.host, "host", "h", "127.0.0.1", "The address of a single redis instance")
-	redisCmd.PersistentFlags().StringVarP(&redisParam.port, "port", "p", "6379", "The port of a single redis instance")
+	redisCmd.PersistentFlags().IntVarP(&redisParam.port, "port", "p", 6379, "The port of a single redis instance")
 	redisCmd.PersistentFlags().StringVarP(&redisParam.password, "password", "a", "", "The authentication password for the redis")
 	redisCmd.AddCommand(redisDumpCmd)
 
@@ -19,13 +26,19 @@ func init() {
 	rootCmd.AddCommand(redisCmd)
 }
 
+type redisScanParameter struct {
+	matchPattern string
+	exactKeys    string
+	scanSize     int64
+}
 type redisParameter struct {
 	host     string
-	port     string
+	port     int
 	password string
 }
 
 var redisParam redisParameter
+var redisScanParam redisScanParameter
 
 var redisCmd = &cobra.Command{
 	Use:   "redis",
@@ -51,14 +64,23 @@ var redisPopulateCmd = &cobra.Command{
 var redisDumpSortedSetCmd = &cobra.Command{
 	Use:   "sorted-set",
 	Short: "Dump redis sorted set datastructure (ZRANGE)",
+	Run: func(cmd *cobra.Command, args []string) {
+		redis.ScanSortedSet(redisParam.host+":"+strconv.Itoa(redisParam.port), redisParam.password, redisScanParam.matchPattern, redisScanParam.exactKeys, redisScanParam.scanSize, -1)
+	},
 }
 
 var redisDumpListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Dump redis list (LRANGE)",
+	Run: func(cmd *cobra.Command, args []string) {
+		redis.ScanList(redisParam.host+":"+strconv.Itoa(redisParam.port), redisParam.password, redisScanParam.matchPattern, redisScanParam.exactKeys, redisScanParam.scanSize)
+	},
 }
 
 var redisDumpStringCmd = &cobra.Command{
 	Use:   "string",
 	Short: "Dump redis simple string value (GET)",
+	Run: func(cmd *cobra.Command, args []string) {
+		redis.ScanString(redisParam.host+":"+strconv.Itoa(redisParam.port), redisParam.password, redisScanParam.matchPattern, redisScanParam.exactKeys, redisScanParam.scanSize)
+	},
 }

@@ -9,14 +9,11 @@ import (
 	redis "github.com/go-redis/redis"
 )
 
-// ScanList scans (using matchPattern) redis keys and dump the value using LRANGE.
-//
-// it also support getting a list of value using a comma separated keys in exactKeys (will not scan).
-// redisAddress should contain the <HOST>:<PORT> information.
-func ScanList(redisAddress, password, matchPattern, exactKeys string, scanSize int64) {
+// ScanSortedSet scan redis key using matchPattern and return their value
+func ScanSortedSet(address, password, matchPattern, exactKeys string, scanSize, zRangeSize int64) {
 	// Initialize dependencies
 	csvWriter := csv.NewWriter(os.Stdout)
-	redisClient := initRedis(redisAddress, password)
+	redisClient := initRedis(address, password)
 	pipe := redisClient.Pipeline()
 
 	// Local variables for iterating the keys
@@ -32,13 +29,13 @@ func ScanList(redisAddress, password, matchPattern, exactKeys string, scanSize i
 		if visitedCursor[0] == false {
 			visitedCursor[0] = true
 		}
+		// get all keys from each scan
 
 		var keys []string
 		var nextCursor uint64
 		var err error
 
 		if exactKeys == "" {
-			// get all keys from each scan
 			keys, nextCursor, err = redisClient.Scan(cursor, matchPattern, scanSize).Result()
 			if err != nil {
 				log.Println("ERR", err)
@@ -47,11 +44,10 @@ func ScanList(redisAddress, password, matchPattern, exactKeys string, scanSize i
 		} else {
 			keys = strings.Split(exactKeys, ",")
 		}
-
 		m := map[string]*redis.StringSliceCmd{}
 		// append keys
 		for _, key := range keys {
-			m[key] = pipe.LRange(key, 0, -1)
+			m[key] = pipe.ZRange(key, 0, zRangeSize)
 		}
 		// exec
 		pipe.Exec()
